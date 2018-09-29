@@ -117,7 +117,7 @@ public class ConfigUtils {
         }
         return names;
     }
-
+    //用系统配置的信息替代expression
     public static String replaceProperty(String expression, Map<String, String> params) {
         if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
             return expression;
@@ -141,7 +141,7 @@ public class ConfigUtils {
 
     public static Properties getProperties() {
         if (PROPERTIES == null) {
-            synchronized (ConfigUtils.class) {
+            synchronized (ConfigUtils.class) {//从系统变量中获取->从环境变量中获取->从properties文件中获取
                 if (PROPERTIES == null) {
                     String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
@@ -178,7 +178,7 @@ public class ConfigUtils {
             return value;
         }
         Properties properties = getProperties();
-        return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
+        return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);//用系统中信息取代获取到的配置信息
     }
 
     /**

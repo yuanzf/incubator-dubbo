@@ -85,8 +85,25 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private ConsumerConfig consumer;
     private String protocol;
     // interface proxy reference
+    //保存调用接口的依赖(InvokerInvocationHandler)
+    /**
+     * ref某次调用的值
+     * invoker :interface org.apache.dubbo.demo.DemoService ->
+     * multicast://224.5.6.7:1234/org.apache.dubbo.registry.RegistryService?
+     * anyhost=true&application=demo_consumer_API&
+     * check=false&
+     * dubbo=2.0.2&
+     * generic=false&
+     * interface=org.apache.dubbo.demo.DemoService&methods=sayHello&
+     * pid=33348&
+     * qos.port=33333&
+     * register.ip=172.17.9.32&
+     * remote.timestamp=1538206206541&
+     * side=consumer&
+     * timestamp=1538213781501,directory: org.apache.dubbo.registry.integration.RegistryDirectory@6ae5aa72*/
     private transient volatile T ref;
     private transient volatile Invoker<?> invoker;
+    //是否执行过初始化的标志位
     private transient volatile boolean initialized;
     private transient volatile boolean destroyed;
     @SuppressWarnings("unused")
@@ -185,15 +202,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void init() {
+        //是否已经初始化
         if (initialized) {
             return;
         }
+        //首先设置初始化标志位为true
         initialized = true;
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         // get consumer's global configuration
+        //获取消费者全局配置
         checkDefault();
+        //消费者依赖配置信息
         appendProperties(this);
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
@@ -435,6 +456,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = new ConsumerConfig();
         }
+        //读取消费者配置信息
+        //在xml中的配置如下：
+        //<dubbo:consumer id="test" actives="test" application="test" threadpool="1" />
         appendProperties(consumer);
     }
 

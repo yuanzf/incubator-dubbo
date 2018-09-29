@@ -24,12 +24,13 @@ public class ConsumerAPI {
         ReferenceConfig<DemoService> demoServiceReferenceConfig = new ReferenceConfig<>();
         demoServiceReferenceConfig.setApplication(applicationConfig);
         demoServiceReferenceConfig.setRegistry(registryConfig);
+        //设置远程服务的依赖接口及依赖接口的名称(ReferenceConfig.interfaceClass和ReferenceName的值)
         demoServiceReferenceConfig.setInterface(DemoService.class);
-
-        DemoService demoService = demoServiceReferenceConfig.get();
 
         while (true) {
             try {
+                //获取invoker,如果有则直接返回，如果没有则进行初始化(ReferenceConfig.init)
+                DemoService demoService = demoServiceReferenceConfig.get();
                 Thread.sleep(1000);
                 String hello = demoService.sayHello("hello");
                 System.out.println(hello);

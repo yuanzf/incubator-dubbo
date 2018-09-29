@@ -105,18 +105,19 @@ public abstract class AbstractConfig implements Serializable {
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
-                        value = System.getProperty(pn);
+                        value = System.getProperty(pn);//从java虚拟机读取配置信息，针对某一个类来设置的配置信心（详细）
                         if (!StringUtils.isBlank(value)) {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
                     if (value == null || value.length() == 0) {
                         String pn = prefix + property;
-                        value = System.getProperty(pn);
+                        value = System.getProperty(pn);//java虚拟机获取全局配置信息。
                         if (!StringUtils.isBlank(value)) {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
+                    //获取方法级别配置的信息
                     if (value == null || value.length() == 0) {
                         Method getter;
                         try {
