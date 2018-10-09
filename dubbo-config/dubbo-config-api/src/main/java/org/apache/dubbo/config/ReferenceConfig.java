@@ -228,11 +228,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            //检查interfaceClass是否是接口和interfaceClass是否包含methods方法
             checkInterfaceAndMethods(interfaceClass, methods);
         }
+        //判断是否在系统级别配置了interfaceName的先关信息。
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (resolve == null || resolve.length() == 0) {
+            //获取类文件的配置信息
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (resolveFile == null || resolveFile.length() == 0) {
                 File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
@@ -268,6 +271,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+        //设置当前类引用consumer信息
         if (consumer != null) {
             if (application == null) {
                 application = consumer.getApplication();
@@ -282,6 +286,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = consumer.getMonitor();
             }
         }
+        //设置引用类的module信息
         if (module != null) {
             if (registries == null) {
                 registries = module.getRegistries();
@@ -290,6 +295,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = module.getMonitor();
             }
         }
+        //设置Application信息
         if (application != null) {
             if (registries == null) {
                 registries = application.getRegistries();
@@ -298,10 +304,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = application.getMonitor();
             }
         }
-        checkApplication();
+        checkApplication();//读取更多的关于Application的配置
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
-        resolveAsyncInterface(interfaceClass, map);
+        resolveAsyncInterface(interfaceClass, map);//读取注解(猜测)
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -344,7 +350,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
 
-        String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
+        String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);//获取注册主机地址
         if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (isInvalidLocalHost(hostToRegistry)) {

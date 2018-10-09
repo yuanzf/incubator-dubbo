@@ -178,7 +178,8 @@ public class ConfigUtils {
             return value;
         }
         Properties properties = getProperties();
-        return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);//用系统中信息取代获取到的配置信息
+        //用系统中信息取代获取到的配置信息
+        return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 
     /**

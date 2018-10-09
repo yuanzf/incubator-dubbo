@@ -105,14 +105,17 @@ public abstract class AbstractConfig implements Serializable {
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
-                        value = System.getProperty(pn);//从java虚拟机读取配置信息，针对某一个类来设置的配置信心（详细）
+                        //从java虚拟机读取配置信息，针对某一个类来设置的配置信心（详细）通过 java -D配置
+                        //java -Ddubbo.protocol.port=20080
+                        value = System.getProperty(pn);
                         if (!StringUtils.isBlank(value)) {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
                     if (value == null || value.length() == 0) {
                         String pn = prefix + property;
-                        value = System.getProperty(pn);//java虚拟机获取全局配置信息。
+                        //java虚拟机获取全局配置信息。
+                        value = System.getProperty(pn);
                         if (!StringUtils.isBlank(value)) {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
@@ -199,7 +202,7 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         key = prop;
                     }
-                    Object value = method.invoke(config);
+                    Object value = method.invoke(config);//通过反射调用getName方法
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
                         if (parameter != null && parameter.escaped()) {
