@@ -89,21 +89,28 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    //首先读取-Ddubbo.****.***信息->xml配置的类信息->dubbo.properties配置的信息
     protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
         }
+        //得到dubbo.consumer.（config：ConsumerConfig）
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
+                //public  set***方法
+                //如果是public修饰的set方法并且只有一个原始类型的参数则执行if里的操作
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
-                    String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
+                        && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])/*判断参数是否是原始类型*/) {
+
+                    //将setMyName->myName->my.name
+                    String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase()/*将属性值改为小写：setName中的N变成n*/ + name.substring(4), ".");
 
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
+                        //dubbo.consumer.id.threadpool
                         String pn = prefix + config.getId() + "." + property;
                         //从java虚拟机读取配置信息，针对某一个类来设置的配置信心（详细）通过 java -D配置
                         //java -Ddubbo.protocol.port=20080
@@ -113,6 +120,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                     if (value == null || value.length() == 0) {
+                        //dubbo.consumer.threadpool
                         String pn = prefix + property;
                         //java虚拟机获取全局配置信息。
                         value = System.getProperty(pn);
@@ -138,6 +146,7 @@ public abstract class AbstractConfig implements Serializable {
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
                                 }
                                 if (value == null || value.length() == 0) {
+                                    //读取dubbo.properties配置的信息
                                     value = ConfigUtils.getProperty(prefix + property);
                                 }
                                 if (value == null || value.length() == 0) {
@@ -284,6 +293,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    //判断是否是原始类型数据
     private static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type == String.class

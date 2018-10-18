@@ -24,6 +24,7 @@ public class ConsumerAPI {
         ReferenceConfig<DemoService> demoServiceReferenceConfig = new ReferenceConfig<>();
         demoServiceReferenceConfig.setApplication(applicationConfig);
         demoServiceReferenceConfig.setRegistry(registryConfig);
+        demoServiceReferenceConfig.setTimeout(10000);
         //设置远程服务的依赖接口及依赖接口的名称(ReferenceConfig.interfaceClass和ReferenceName的值)
         demoServiceReferenceConfig.setInterface(DemoService.class);
 

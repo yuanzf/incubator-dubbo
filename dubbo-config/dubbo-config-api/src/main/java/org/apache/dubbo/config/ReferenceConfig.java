@@ -78,7 +78,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // client type
     private String client;
     // url for peer-to-peer invocation
-    private String url;
+    private String  url;
     // method configs
     private List<MethodConfig> methods;
     // default config
@@ -212,9 +212,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         // get consumer's global configuration
-        //获取消费者全局配置
+        //获取消费者信息
         checkDefault();
-        //消费者依赖配置信息
+        //消费者配置信息
         appendProperties(this);
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
@@ -248,6 +248,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(new File(resolveFile));
+                    //从/User/yzf/dubbo-resolve.properties文件中解析接口的配置信息
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
@@ -272,6 +273,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         //设置当前类引用consumer信息
+        //当ref没有设置Application，module，registries，monitor属性时从consumer中获取
         if (consumer != null) {
             if (application == null) {
                 application = consumer.getApplication();
@@ -287,6 +289,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         //设置引用类的module信息
+        //monitor,registeies优先级Application>module>referenceConfig>consumer
         if (module != null) {
             if (registries == null) {
                 registries = module.getRegistries();
@@ -465,6 +468,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //读取消费者配置信息
         //在xml中的配置如下：
         //<dubbo:consumer id="test" actives="test" application="test" threadpool="1" />
+        //首先读取-Ddubbo.consumer.threadpool信息->xml配置的类信息->dubbo.properties配置的信息
         appendProperties(consumer);
     }
 

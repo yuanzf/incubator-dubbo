@@ -284,7 +284,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      * @param invocation invocation
      * @return LoadBalance instance. if not need init, return null.
      */
-    protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+    protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {//初始化负载均衡
         if (CollectionUtils.isNotEmpty(invokers)) {
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));

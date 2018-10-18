@@ -150,7 +150,7 @@ public class ConfigUtils {
                             path = Constants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
-                    PROPERTIES = ConfigUtils.loadProperties(path, false, true);
+                    PROPERTIES = ConfigUtils.loadProperties(path, false, true);//读取配置文件配置的属性
                 }
             }
         }

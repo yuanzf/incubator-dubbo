@@ -1,1 +1,2 @@
+#扩展点SPI（参考 https://blog.csdn.net/quhongwei_zhanqiu/article/details/41577159）
 rmi=org.apache.dubbo.rpc.protocol.rmi.RmiProtocol
