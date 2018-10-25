@@ -337,7 +337,7 @@ public class DubboProtocol extends AbstractProtocol {
                 return;
             }
 
-            for (Class c : optimizer.getSerializableClasses()) {
+            for (Class c   : optimizer.getSerializableClasses()) {
                 SerializableClassRegistry.registerClass(c);
             }
 

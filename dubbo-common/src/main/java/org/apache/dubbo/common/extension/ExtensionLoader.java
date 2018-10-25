@@ -52,6 +52,8 @@ import java.util.regex.Pattern;
  * <li>default extension is an adaptive instance</li>
  * </ul>
  *
+ * 是一个单例工厂类
+ *
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service Provider in Java 5</a>
  * @see org.apache.dubbo.common.extension.SPI
  * @see org.apache.dubbo.common.extension.Adaptive
@@ -566,6 +568,7 @@ public class ExtensionLoader<T> {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
+                    //加载扩展类
                     classes = loadExtensionClasses();
                     cachedClasses.set(classes);
                 }
@@ -628,17 +631,22 @@ public class ExtensionLoader<T> {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
+                    //去除行尾的注释部分
                     if (ci >= 0) line = line.substring(0, ci);
                     line = line.trim();
                     if (line.length() > 0) {
                         try {
+                            //在文件中dubbo=org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol
                             String name = null;
                             int i = line.indexOf('=');
                             if (i > 0) {
+                                //name=dubbo
+                                //line=org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol
                                 name = line.substring(0, i).trim();
                                 line = line.substring(i + 1).trim();
                             }
                             if (line.length() > 0) {
+                                //加载扩展类
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
@@ -758,10 +766,12 @@ public class ExtensionLoader<T> {
         return compiler.compile(code, classLoader);
     }
 
+    //创建代理类
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuilder = new StringBuilder();
         Method[] methods = type.getMethods();
         boolean hasAdaptiveAnnotation = false;
+        //遍历方法是否有@Adaptive类,如果有一个方法有该注解则跳出循环
         for (Method m : methods) {
             if (m.isAnnotationPresent(Adaptive.class)) {
                 hasAdaptiveAnnotation = true;
@@ -769,9 +779,9 @@ public class ExtensionLoader<T> {
             }
         }
         // no need to generate adaptive class since there's no adaptive method found.
-        if (!hasAdaptiveAnnotation)
+        if (!hasAdaptiveAnnotation){
             throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
-
+        }
         codeBuilder.append("package ").append(type.getPackage().getName()).append(";");
         codeBuilder.append("\nimport ").append(ExtensionLoader.class.getName()).append(";");
         codeBuilder.append("\npublic class ").append(type.getSimpleName()).append("$Adaptive").append(" implements ").append(type.getCanonicalName()).append(" {");

@@ -90,6 +90,7 @@ public /**final**/ class URL implements Serializable {
 
     // ==== cache ====
 
+    //负载均衡算法中保存 随机数
     private volatile transient Map<String, Number> numbers;
 
     private volatile transient Map<String, URL> urls;

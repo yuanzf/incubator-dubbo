@@ -69,6 +69,7 @@ public @interface Activate {
      * Relative ordering info, optional
      * Deprecated since 2.7.0
      *
+     * before配置的值是扩展的别名
      * @return extension list which should be put before the current one
      */
     @Deprecated
@@ -77,6 +78,8 @@ public @interface Activate {
     /**
      * Relative ordering info, optional
      * Deprecated since 2.7.0
+     *
+     * after配置的值是扩展的别名
      *
      * @return extension list which should be put after the current one
      */

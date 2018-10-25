@@ -160,7 +160,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     //加载注册中心
     protected List<URL> loadRegistries(boolean provider) {
-        checkRegistry();
+        checkRegistry();//读取每个注册中心的相关配置信息
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
@@ -168,13 +168,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (address == null || address.length() == 0) {
                     address = Constants.ANYHOST_VALUE;
                 }
-                String sysaddress = System.getProperty("dubbo.registry.address");
+                String sysaddress = System.getProperty("dubbo.registry.address");//查看是否动过java -D配置过dubboRegistry.address相关信息
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
                 if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
-                    appendParameters(map, application);
+                    appendParameters(map, application);//将Application中的参数保存到map中
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
                     map.put("dubbo", Version.getProtocolVersion());

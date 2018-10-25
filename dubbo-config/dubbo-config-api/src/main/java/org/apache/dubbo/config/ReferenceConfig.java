@@ -310,7 +310,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkApplication();//读取更多的关于Application的配置
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
-        resolveAsyncInterface(interfaceClass, map);//读取注解(猜测)
+        //读取注解(猜测)
+        resolveAsyncInterface(interfaceClass, map);
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -378,7 +379,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         final boolean isJvmRefer;
         //isInjvm()是否从jvm中查找reference实例（inJvm是通讯协议中的一种）
         if (isInjvm() == null) {
-            if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
+            // if a url is specified, don't do local reference
+            if (url != null && url.length() > 0) {
                 isJvmRefer = false;
             } else {
                 // by default, reference local service if there is
@@ -395,7 +397,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
         } else {
-            if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
+            // user specified URL, could be peer-to-peer address, or register center's address.
+            if (url != null && url.length() > 0) {
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
                     for (String u : us) {

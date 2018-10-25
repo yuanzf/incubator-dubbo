@@ -228,7 +228,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
-        checkDefault();
+        checkDefault();//读取ProviderConfigconfig的相关配置信息
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
