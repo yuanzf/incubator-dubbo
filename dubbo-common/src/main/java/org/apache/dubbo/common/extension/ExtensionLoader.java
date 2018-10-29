@@ -742,6 +742,11 @@ public class ExtensionLoader<T> {
         return extension.value();
     }
 
+    /**
+     * 动态生成类
+     *
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
