@@ -90,7 +90,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     // method configuration
     private List<MethodConfig> methods;
     private ProviderConfig provider;
-    private transient volatile boolean exported;
+    private transient volatile boolean exported; //标志位  是否已经执行export
 
     private transient volatile boolean unexported;
 
@@ -230,6 +230,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkDefault();//读取ProviderConfigconfig的相关配置信息
         if (provider != null) {
+            //registries优先级   provide > module > application
+            //monitor优先级   provide > module > application
             if (application == null) {
                 application = provider.getApplication();
             }
@@ -274,7 +276,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterfaceAndMethods(interfaceClass, methods);
+            checkInterfaceAndMethods(interfaceClass, methods);//检验interfaceClass是否完全包含 methods的所有方法
             checkRef();
             generic = Boolean.FALSE.toString();
         }
@@ -352,6 +354,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    //导出dubbo服务的Urls
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {

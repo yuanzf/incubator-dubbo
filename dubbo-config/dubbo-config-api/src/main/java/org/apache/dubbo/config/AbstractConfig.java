@@ -96,7 +96,7 @@ public abstract class AbstractConfig implements Serializable {
         }
         //得到dubbo.consumer.（config：ConsumerConfig）
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
-        Method[] methods = config.getClass().getMethods();
+        Method[] methods = config.getClass().getMethods();//获取config中的所有方法
         for (Method method : methods) {
             try {
                 String name = method.getName();
@@ -109,6 +109,7 @@ public abstract class AbstractConfig implements Serializable {
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase()/*将属性值改为小写：setName中的N变成n*/ + name.substring(4), ".");
 
                     String value = null;
+                    //针对某一个Config java -D配置信息
                     if (config.getId() != null && config.getId().length() > 0) {
                         //dubbo.consumer.id.threadpool
                         String pn = prefix + config.getId() + "." + property;
@@ -119,6 +120,7 @@ public abstract class AbstractConfig implements Serializable {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
+                    //针对同一类型Config  java -D配置信息
                     if (value == null || value.length() == 0) {
                         //dubbo.consumer.threadpool
                         String pn = prefix + property;
@@ -129,9 +131,11 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                     //获取方法级别配置的信息
+                    //为用 java -D配置相关信息
                     if (value == null || value.length() == 0) {
                         Method getter;
                         try {
+                            //将method方法名称由set变为get
                             getter = config.getClass().getMethod("get" + name.substring(3));
                         } catch (NoSuchMethodException e) {
                             try {
@@ -141,6 +145,7 @@ public abstract class AbstractConfig implements Serializable {
                             }
                         }
                         if (getter != null) {
+                            //通过反射执行get方法
                             if (getter.invoke(config) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
@@ -160,6 +165,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                     if (value != null && value.length() > 0) {
+                        //通过反射调用set方法
                         method.invoke(config, convertPrimitive(method.getParameterTypes()[0], value));
                     }
                 }

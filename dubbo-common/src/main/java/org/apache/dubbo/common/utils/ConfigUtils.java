@@ -139,6 +139,10 @@ public class ConfigUtils {
         return sb.toString();
     }
 
+    /**
+     * 读取dubbo.properties文件
+     * @return 返回w文件里里配置的键值对
+     */
     public static Properties getProperties() {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {//从系统变量中获取->从环境变量中获取->从properties文件中获取
@@ -177,7 +181,7 @@ public class ConfigUtils {
         if (value != null && value.length() > 0) {
             return value;
         }
-        Properties properties = getProperties();
+        Properties properties = getProperties();//从dubbo.properties文件中获取相关属性
         //用系统中信息取代获取到的配置信息
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
