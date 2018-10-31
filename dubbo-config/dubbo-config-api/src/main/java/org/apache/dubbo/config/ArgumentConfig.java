@@ -22,6 +22,11 @@ import java.io.Serializable;
 
 /**
  * @export
+ *
+ * <dubbo:method name = "sayHello" timeout="3000" retries = "2" >
+ *      <dubbo:argument index = "0 " callback =  "true" />
+ * </dubbo:method>
+ * index 和 type这两个参数二选一
  */
 public class ArgumentConfig implements Serializable {
 

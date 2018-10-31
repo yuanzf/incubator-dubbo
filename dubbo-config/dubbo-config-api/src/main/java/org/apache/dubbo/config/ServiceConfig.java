@@ -356,13 +356,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     //导出dubbo服务的Urls
     private void doExportUrls() {
+        //加载URL列表，可以存在多个注册中心，（不同服务注册不同服务中心，一个服务注册到多个注册中心）
         List<URL> registryURLs = loadRegistries(true);
+        //多协议 不同服务可以使用不同协议，同一个服务可以使用多个协议暴露
+        //同一个服务以多种方式暴露服务
+        //<dubbo :service id = "helloService" interface = "com.dubbo.com.api.HelloService" protocol = "dubbo,hession"/>
         for (ProtocolConfig protocolConfig : protocols) {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        //默认使用dubbo协议暴露服务
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = "dubbo";
@@ -383,6 +388,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
+                //重试  当集群容错配置为Faliover Cluster时生效；
+                //<dubbo:service retries=0>
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
@@ -480,6 +487,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
+
+        //TODO 阅读到此处
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {

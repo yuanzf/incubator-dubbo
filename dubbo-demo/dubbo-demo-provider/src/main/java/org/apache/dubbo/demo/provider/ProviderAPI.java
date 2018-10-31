@@ -40,8 +40,8 @@ public class ProviderAPI {
         demoServiceServiceConfig.setRef(demoService);
         demoServiceServiceConfig.setVersion("1.0.0");
         demoServiceServiceConfig.setGroup("test");
-
         demoServiceServiceConfig.export();
+
         try {
             System.in.read();
         } catch (IOException e) {

@@ -23,6 +23,10 @@ import java.util.List;
 
 /**
  * MethodConfig
+ * <dubbo:reference >
+ *      <dubbo:method name = "sayHello" retries = "2" />
+ * </dubbo:reference>
+ * 在dubbo:method中个配置的信息都会保存在此类（MethodConfig）中
  *
  * @export
  */
