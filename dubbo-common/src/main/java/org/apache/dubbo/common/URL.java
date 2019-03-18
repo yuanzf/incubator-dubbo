@@ -78,10 +78,10 @@ public /**final**/ class URL implements Serializable {
 
     private final String password;
 
-    // by default, host to registry
+    //注册地址
     private final String host;
 
-    // by default, port to registry
+    //注册端口
     private final int port;
 
     private final String path;
@@ -103,6 +103,7 @@ public /**final**/ class URL implements Serializable {
 
     private volatile transient String parameter;
 
+    //dubbo服务完整的调用信息拼接和full字段的内容相似
     private volatile transient String string;
 
     protected URL() {

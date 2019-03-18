@@ -1,5 +1,6 @@
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.utils.ConfigUtils;
 
 import java.util.Properties;

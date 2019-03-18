@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
  * Filter. (SPI, Singleton, ThreadSafe)
  */
 @SPI
-public interface Filter {
+public interface  Filter {
 
     /**
      * do invoke filter.
@@ -34,7 +34,8 @@ public interface Filter {
      * return result;
      * </code>
      *
-     * @param invoker    service
+     * @param invoker    service  这里是实际执行的invoker(服务Invoker)当有多个过滤器的时候，
+     *                              这个Invoker就是过滤器。通过这个方法构建过滤器链
      * @param invocation invocation.
      * @return invoke result.
      * @throws RpcException

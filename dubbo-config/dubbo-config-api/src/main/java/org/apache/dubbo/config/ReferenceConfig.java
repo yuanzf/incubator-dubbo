@@ -78,7 +78,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // client type
     private String client;
     // url for peer-to-peer invocation
-    private String  url;
+    private String url;
     // method configs
     private List<MethodConfig> methods;
     // default config
@@ -100,7 +100,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * register.ip=172.17.9.32&
      * remote.timestamp=1538206206541&
      * side=consumer&
-     * timestamp=1538213781501,directory: org.apache.dubbo.registry.integration.RegistryDirectory@6ae5aa72*/
+     * timestamp=1538213781501,directory: org.apache.dubbo.registry.integration.RegistryDirectory@6ae5aa72
+     */
     private transient volatile T ref;
     private transient volatile Invoker<?> invoker;
     //是否执行过初始化的标志位
@@ -373,6 +374,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
+    //创建远程服务调用代理
     private T createProxy(Map<String, String> map) {
         //url保存当前服务的所有信息
         URL tmpUrl = new URL("temp", "localhost", 0, map);
@@ -380,6 +382,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //isInjvm()是否从jvm中查找reference实例（inJvm是通讯协议中的一种）
         if (isInjvm() == null) {
             // if a url is specified, don't do local reference
+            //指定UrL的情况下不做本地引用
             if (url != null && url.length() > 0) {
                 isJvmRefer = false;
             } else {
@@ -399,6 +402,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         } else {
             // user specified URL, could be peer-to-peer address, or register center's address.
+            //用户指定的URL,指定的URL可能滴点对点的连接地址，也可能是注册中心的URL
             if (url != null && url.length() > 0) {
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
@@ -439,7 +443,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 for (URL url : urls) {
                     invokers.add(refprotocol.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
-                        registryURL = url; // use last registry url
+                        registryURL = url; // 用最后一个URL
                     }
                 }
                 if (registryURL != null) { // registry url is available
@@ -447,6 +451,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
                     invoker = cluster.join(new StaticDirectory(u, invokers));
                 } else { // not a registry url
+                    //不是注册中心的URL
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }
@@ -467,7 +472,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
-        // create service proxy
+        // 创建服务代理
         return (T) proxyFactory.getProxy(invoker);
     }
 

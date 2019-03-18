@@ -302,21 +302,21 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             try {
                 stubClass = ClassHelper.forNameWithThreadContextClassLoader(stub);
             } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
+                throw new IllegalStateException( e.getMessage(), e);
             }
             if (!interfaceClass.isAssignableFrom(stubClass)) {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
         }
-        checkApplication();
-        checkRegistry();
-        checkProtocol();
-        appendProperties(this);
+        checkApplication();//检车并设置ApplicationConfig
+        checkRegistry();//检查并设置注册中心
+        checkProtocol();//检查并设置通讯协议
+        appendProperties(this);//设只proerties（System.getProperties）很多都是.properties中定义的，或者在虚拟机中参数中定义的
         checkStubAndMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
-        doExportUrls();
+        doExportUrls();//导出dubbo服务的URLs
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
     }
@@ -388,7 +388,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
-                //重试  当集群容错配置为Faliover Cluster时生效；
+                //重试  当集群容错配置为Faliover Cluster时生效(失败重试次数)；
                 //<dubbo:service retries=0>
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
@@ -398,6 +398,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     }
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
+                //获取方法层面的参数配置  <dubbo:argument type=""/> 并将参数配置信息添加到map当中
                 if (arguments != null && !arguments.isEmpty()) {
                     for (ArgumentConfig argument : arguments) {
                         // convert argument type
@@ -443,15 +444,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } // end of methods for
         }
 
+        //是否是通用的（如果是通用的则返回一个json数据）
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(Constants.GENERIC_KEY, generic);
             map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
         } else {
+            //获取接口的版本（同一个接口可以配置不同的版本）
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
 
+            //将接口的方法添加到map当中，方法以","分割
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
@@ -460,6 +464,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
+        //配置taken （taken 可以防止消费端跳过注册中心直接调用服务端）
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(Constants.TOKEN_KEY, UUID.randomUUID().toString());
@@ -467,16 +472,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.TOKEN_KEY, token);
             }
         }
+        //是否本地调用（本地调用使用injvm，是一个伪协议，他不打开端口，不发起远程调用，只在jvm内直接关联，但执行dubbo的filter链）
         if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
         }
-        // export service
+        // export service 导出服务
         String contextPath = protocolConfig.getContextpath();
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
-
+        //服务方提供方Ip 和端口
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);

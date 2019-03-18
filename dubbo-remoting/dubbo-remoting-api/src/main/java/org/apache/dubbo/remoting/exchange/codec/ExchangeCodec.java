@@ -73,6 +73,7 @@ public class ExchangeCodec extends TelnetCodec {
         } else if (msg instanceof Response) {
             encodeResponse(channel, buffer, (Response) msg);
         } else {
+            //将msg编码输入到ChannelBuffer中
             super.encode(channel, buffer, msg);
         }
     }
@@ -232,6 +233,7 @@ public class ExchangeCodec extends TelnetCodec {
         if (req.isEvent()) {
             encodeEventData(channel, out, req.getData());
         } else {
+            //将req.getData写入到ObjectOutput中
             encodeRequestData(channel, out, req.getData(), req.getVersion());
         }
         out.flushBuffer();

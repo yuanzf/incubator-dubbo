@@ -21,8 +21,11 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class DemoServiceImpl implements DemoService {
+
+    List<Integer> list;
 
     @Override
     public String sayHello(String name) {

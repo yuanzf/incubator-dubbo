@@ -69,18 +69,25 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * 对结果进行解析并返回结果
+     * */
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+                .deserialize(channel.getUrl(), input);//反序列化
         
         byte flag = in.readByte();
         switch (flag) {
             case DubboCodec.RESPONSE_NULL_VALUE:
+                //返回结果为空
                 break;
             case DubboCodec.RESPONSE_VALUE:
+                //返回结果有值
                 try {
+                    //获取本次服务调用的返回类型
                     Type[] returnType = RpcUtils.getReturnTypes(invocation);
+                    //将本次调用的结果设置到result中
                     setValue(returnType == null || returnType.length == 0 ? in.readObject() :
                             (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
@@ -89,6 +96,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 }
                 break;
             case DubboCodec.RESPONSE_WITH_EXCEPTION:
+                //调用异常
                 try {
                     Object obj = in.readObject();
                     if (obj instanceof Throwable == false)

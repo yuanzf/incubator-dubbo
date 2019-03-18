@@ -42,7 +42,9 @@ public class ProtocolFilterWrapper implements Protocol {
         }
         this.protocol = protocol;
     }
-
+    /**
+     * 构建过滤器调用链
+     * */
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);

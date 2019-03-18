@@ -44,10 +44,19 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * dubbo服务接口类型
+     * */
     private final Class<T> type;
 
+    /**
+     * dubbo服务接口调用信息
+     * */
     private final URL url;
 
+    /**
+     * 保存附加信息
+     * */
     private final Map<String, String> attachment;
 
     private volatile boolean available = true;
@@ -63,10 +72,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public AbstractInvoker(Class<T> type, URL url, Map<String, String> attachment) {
-        if (type == null)
+        if (type == null){
             throw new IllegalArgumentException("service type == null");
-        if (url == null)
+        }
+        if (url == null){
             throw new IllegalArgumentException("service url == null");
+        }
         this.type = type;
         this.url = url;
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
@@ -122,6 +133,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
     }
 
+    /**
+     * 调用远程服务
+     * */
     @Override
     public Result invoke(Invocation inv) throws RpcException {
         if (destroyed.get()) {

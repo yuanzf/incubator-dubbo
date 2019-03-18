@@ -51,6 +51,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     private ScheduledFuture<?> heartbeatTimer;
     // heartbeat(ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
+    //心跳超时时间
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {

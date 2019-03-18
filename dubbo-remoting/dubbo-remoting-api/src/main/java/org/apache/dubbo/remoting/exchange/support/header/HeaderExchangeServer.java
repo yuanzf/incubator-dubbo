@@ -237,6 +237,9 @@ public class HeaderExchangeServer implements ExchangeServer {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    /**
+     * 发送消息
+     * */
     @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
