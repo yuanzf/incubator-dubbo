@@ -44,10 +44,16 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
+    /**
+     * rpc通信客户端信息
+     * */
     private final ExchangeClient[] clients;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
+    /**
+     * dubbo服务版本
+     * */
     private final String version;
 
     private final ReentrantLock destroyLock = new ReentrantLock();

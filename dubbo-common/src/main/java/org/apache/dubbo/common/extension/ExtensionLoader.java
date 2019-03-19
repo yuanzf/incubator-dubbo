@@ -89,6 +89,9 @@ public class ExtensionLoader<T> {
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
     private volatile Class<?> cachedAdaptiveClass = null;
+    /**
+     * 扩展类默认名称（如Protocol.class 默认是dubbo）
+     * */
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
 
@@ -307,9 +310,11 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
-        if (name == null || name.length() == 0)
+        if (name == null || name.length() == 0){
             throw new IllegalArgumentException("Extension name == null");
+        }
         if ("true".equals(name)) {
+            //获取默认扩展
             return getDefaultExtension();
         }
         Holder<Object> holder = cachedInstances.get(name);
@@ -552,13 +557,16 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getExtensionClass(String name) {
-        if (type == null)
+        if (type == null){
             throw new IllegalArgumentException("Extension type == null");
-        if (name == null)
+        }
+        if (name == null){
             throw new IllegalArgumentException("Extension name == null");
+        }
         Class<?> clazz = getExtensionClasses().get(name);
-        if (clazz == null)
+        if (clazz == null){
             throw new IllegalStateException("No such extension \"" + name + "\" for " + type.getName() + "!");
+        }
         return clazz;
     }
 
@@ -577,9 +585,10 @@ public class ExtensionLoader<T> {
         return classes;
     }
 
-    // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
+        //获取默认SPI注解
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+        //获取默认的扩展类
         if (defaultAnnotation != null) {
             String value = defaultAnnotation.value();
             if ((value = value.trim()).length() > 0) {
@@ -588,10 +597,13 @@ public class ExtensionLoader<T> {
                     throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
                             + ": " + Arrays.toString(names));
                 }
-                if (names.length == 1) cachedDefaultName = names[0];
+                if (names.length == 1){
+                    cachedDefaultName = names[0];
+                }
             }
         }
 
+        //把所有的扩展类都加载了
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
@@ -602,7 +614,15 @@ public class ExtensionLoader<T> {
         return extensionClasses;
     }
 
+
+    /**
+     * 加载自定义的组件，如自定义Filter,Protocol,等
+     * @param extensionClasses
+     * @param dir  存放自定义组件的文件夹路径
+     * @param type  扩展类的类型行（Filter.class,  Protocol.class）
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
+        //获取自定义组件的文件的名称
         String fileName = dir + type;
         try {
             Enumeration<java.net.URL> urls;
@@ -615,6 +635,7 @@ public class ExtensionLoader<T> {
             if (urls != null) {
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
+                    //加载扩展类的定义文件
                     loadResource(extensionClasses, classLoader, resourceURL);
                 }
             }
@@ -624,15 +645,26 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 将自定义组将的名称保存到extensionClasses中
+     *
+     * @param extensionClasses   testFilter=org.apache.dubbo.demo.consumer.TestFilter =》
+     *                                  String：testFilter   Class:org.apache.dubbo.demo.consumer.TestFilter
+     * @param classLoader
+     * @param resourceURL
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
         try {
+            //读取扩展类文件
             BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), "utf-8"));
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
                     //去除行尾的注释部分
-                    if (ci >= 0) line = line.substring(0, ci);
+                    if (ci >= 0) {
+                        line = line.substring(0, ci);
+                    }
                     line = line.trim();
                     if (line.length() > 0) {
                         try {
