@@ -93,10 +93,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             return;
         }
         // find handler by message class.
-        Object msg = req.getData();
+        Object msg = req.getData(); //获取到的RpcInvocation
         try {
             // handle data.
-            CompletableFuture<Object> future = handler.reply(channel, msg);
+            CompletableFuture<Object> future = handler.reply(channel, msg); //如果使用dubbo协议   此处handler就是dubboProtocol$1
             if (future.isDone()) {
                 res.setStatus(Response.OK);
                 res.setResult(future.get());

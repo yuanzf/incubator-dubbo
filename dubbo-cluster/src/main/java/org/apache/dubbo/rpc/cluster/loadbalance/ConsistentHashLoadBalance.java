@@ -44,6 +44,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String methodName = RpcUtils.getMethodName(invocation);
+        //根据服务名+方法名生成唯key
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
@@ -60,6 +61,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private final int replicaNumber;
 
+        /**
+         * 根据Invokers生成的hashCode
+         * */
         private final int identityHashCode;
 
         private final int[] argumentIndex;
@@ -68,6 +72,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
+            // 获取所配置的结点数，如没有设置则使用默认值160
             this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
             String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
             argumentIndex = new int[index.length];

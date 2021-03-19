@@ -32,12 +32,9 @@
 
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl">
-        <property name="list" >
-            <list value-type="java.lang.Integer"> 1 </list>
-        </property>
     </bean>
-
     <!-- declare the service interface to be exported -->
-    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"  filter="filter1" />
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"  filter="filter1" version="0.0.0" >
+    </dubbo:service>
 
 </beans>

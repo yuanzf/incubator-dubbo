@@ -84,6 +84,7 @@ public /**final**/ class URL implements Serializable {
     //注册端口
     private final int port;
 
+    //interfaceName(保存接口名称)
     private final String path;
 
     private final Map<String, String> parameters;

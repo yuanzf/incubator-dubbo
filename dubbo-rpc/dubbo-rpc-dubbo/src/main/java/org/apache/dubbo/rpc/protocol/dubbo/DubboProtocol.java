@@ -76,9 +76,17 @@ public class DubboProtocol extends AbstractProtocol {
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
+        /**
+         * 应答请求 如客户端请求数据   此方法应答客户端的请求
+         * @param channel  通信的channel
+         * @param message  请求的参数，每次dubbo调用，所调用的方法参数等等一些信息都包含在message中
+         * @return
+         * @throws RemotingException 远程服务异常
+         */
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
+                //服务消费端传递过来的Invocation
                 Invocation inv = (Invocation) message;
                 Invoker<?> invoker = getInvoker(channel, inv);
                 // need to consider backward-compatibility if it's a callback

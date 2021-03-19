@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
@@ -51,7 +52,8 @@ public class DubboProtocolTest {
     @Test
     public void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/" + DemoService.class.getName() + "?codec=exchange")));
+        Invoker<DemoService> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/" + DemoService.class.getName() + "?codec=exchange"));
+        protocol.export(invoker);
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout", 3000l)));
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
     }

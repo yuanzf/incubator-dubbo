@@ -73,10 +73,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     @SuppressWarnings("unchecked")
     private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+        //生成Spring的bean定义，指定beanClass交给Spring反射创建实例。
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
         String id = element.getAttribute("id");
+        //确保容器中没有重复的Bean定义
         if ((id == null || id.length() == 0) && required) {
             String generatedBeanName = element.getAttribute("name");
             if (generatedBeanName == null || generatedBeanName.length() == 0) {
@@ -91,6 +93,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             }
             id = generatedBeanName;
             int counter = 2;
+            //减查重复的Bean，如果有则生成唯一Id，
             while (parserContext.getRegistry().containsBeanDefinition(id)) {
                 id = generatedBeanName + (counter++);
             }
@@ -99,6 +102,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             if (parserContext.getRegistry().containsBeanDefinition(id)) {
                 throw new IllegalStateException("Duplicate spring bean id " + id);
             }
+            //向Spring注册beanDefinition
             parserContext.getRegistry().registerBeanDefinition(id, beanDefinition);
             beanDefinition.getPropertyValues().addPropertyValue("id", id);
         }
@@ -120,6 +124,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 classDefinition.setBeanClass(ReflectUtils.forName(className));
                 classDefinition.setLazyInit(false);
                 parseProperties(element.getChildNodes(), classDefinition);
+                //ServiceBean依赖服务提供者的实现类
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
         } else if (ProviderConfig.class.equals(beanClass)) {
@@ -129,15 +134,18 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
         Set<String> props = new HashSet<String>();
         ManagedMap parameters = null;
-        for (Method setter : beanClass.getMethods()) {
+        for (Method setter : beanClass.getMethods()) {//获取具体配类置方法
             String name = setter.getName();
             if (name.length() > 3 && name.startsWith("set")
                     && Modifier.isPublic(setter.getModifiers())
-                    && setter.getParameterTypes().length == 1) {
+                    && setter.getParameterTypes().length == 1) {//获取所有前缀为set，并且只有一个参数的方法
                 Class<?> type = setter.getParameterTypes()[0];
+                //提取set对应的字段，比如setTimeout会得到timeout,setBeanName会得到bean_name
                 String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
+
                 props.add(property);
                 Method getter = null;
+                //检验是否有对应的getter和is方法，没有则跳过
                 try {
                     getter = beanClass.getMethod("get" + name.substring(3), new Class<?>[0]);
                 } catch (NoSuchMethodException e) {

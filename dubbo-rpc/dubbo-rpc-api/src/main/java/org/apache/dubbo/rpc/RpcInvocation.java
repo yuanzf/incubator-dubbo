@@ -34,12 +34,26 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private static final long serialVersionUID = -4355285085441097045L;
 
+
+    /**
+     * dubbo调用的方法名
+     */
     private String methodName;
 
+    /**
+     * 方法参数类型
+     */
     private Class<?>[] parameterTypes;
 
+
+    /**
+     * 调用方法传递的参数
+     */
     private Object[] arguments;
 
+    /**
+     * 附加参数：如 timeout ； interface ；
+     */
     private Map<String, String> attachments;
 
     private transient Invoker<?> invoker;

@@ -101,6 +101,13 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
     }
 
+    /**
+     * 发送rpc请求
+     * @param request 包装了调用方法，调用类，方法参数，方法参数类型 等等所有的参数
+     * @param timeout 超时统计
+     * @return
+     * @throws RemotingException
+     */
     @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         if (closed) {

@@ -31,16 +31,14 @@ public class Consumer {
         context.start();
         // get remote service proxy
         DemoService demoService = (DemoService) context.getBean("demoService");
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                // call remote method
-                String hello = demoService.sayHello("world");
-                // get result
-                System.out.println(hello);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+        try {
+            Thread.sleep(1000);
+            // call remote method
+            String hello = demoService.sayHello("world");
+            // get result
+            System.out.println(hello);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 }
