@@ -87,7 +87,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 try {
                     //获取本次服务调用的返回类型
                     Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    //将本次调用的结果设置到result中
+                    //将本次调用的结果设置到result中，如果返回的值包含泛型，则调用反序列化解析接口
                     setValue(returnType == null || returnType.length == 0 ? in.readObject() :
                             (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
@@ -99,8 +99,10 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 //调用异常
                 try {
                     Object obj = in.readObject();
-                    if (obj instanceof Throwable == false)
+                    if (obj instanceof Throwable == false){
                         throw new IOException("Response data error, expect Throwable, but get " + obj);
+                    }
+                    //保存读取的返回值异常结果
                     setException((Throwable) obj);
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
@@ -108,6 +110,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 break;
             case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
                 try {
+                    //返回值为null，并且有隐藏式参数
                     setAttachments((Map<String, String>) in.readObject(Map.class));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
@@ -127,8 +130,9 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
             case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
                 try {
                     Object obj = in.readObject();
-                    if (obj instanceof Throwable == false)
+                    if (obj instanceof Throwable == false){
                         throw new IOException("Response data error, expect Throwable, but get " + obj);
+                    }
                     setException((Throwable) obj);
                     setAttachments((Map<String, String>) in.readObject(Map.class));
                 } catch (ClassNotFoundException e) {

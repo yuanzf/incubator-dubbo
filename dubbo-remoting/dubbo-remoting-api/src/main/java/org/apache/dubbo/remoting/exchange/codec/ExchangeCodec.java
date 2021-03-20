@@ -81,6 +81,7 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();
+        //最多读取16个字节，并分配存储空间。
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
         buffer.readBytes(header);
         return decode(channel, buffer, readable, header);
@@ -91,30 +92,37 @@ public class ExchangeCodec extends TelnetCodec {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH
                 || readable > 1 && header[1] != MAGIC_LOW) {
+            //处理流起始处不是Dubbo魔法数0xdabb场景
             int length = header.length;
             if (header.length < readable) {
+                //流中还有数据可读取，为header重新分配空间，用来存储流中所有可读字节
                 header = Bytes.copyOf(header, readable);
+                //将流中剩余字节读取到Header中
                 buffer.readBytes(header, length, readable - length);
             }
             for (int i = 1; i < header.length - 1; i++) {
                 if (header[i] == MAGIC_HIGH && header[i + 1] == MAGIC_LOW) {
+                    //将Buffer读取索引指向会Dubbo报文头出（魔数：0xdabb）
                     buffer.readerIndex(buffer.readerIndex() - header.length + i);
+                    //将流起始处至下一个dubbo报文之间的数据放到Header中。
                     header = Bytes.copyOf(header, i);
                     break;
                 }
             }
+            //主要用于解析header数据，比如用Telnet
             return super.decode(channel, buffer, readable, header);
         }
-        // check length.
+        // check length.如果读取数据长度相遇16字节，则期待更多数据。
         if (readable < HEADER_LENGTH) {
             return DecodeResult.NEED_MORE_INPUT;
         }
 
-        // get data length.
+        // get data length.提取头部存储的报文长度，并校验是否超过长度。
         int len = Bytes.bytes2int(header, 12);
         checkPayload(channel, len);
 
         int tt = len + HEADER_LENGTH;
+        //检验是否可以读取完整Dubbo报文，否则期待更多数据
         if (readable < tt) {
             return DecodeResult.NEED_MORE_INPUT;
         }
@@ -123,8 +131,11 @@ public class ExchangeCodec extends TelnetCodec {
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, len);
 
         try {
+            //解码消息体，is流式完整的RPC调用报文，duobbo协议调用的是
+            //org.apache.dubbo.rpc.protocol.dubbo.DubboCodec#ecodeBody
             return decodeBody(channel, is, header);
         } finally {
+            //如果解码过程有问题，则跳过这次RPC调用报文
             if (is.available() > 0) {
                 try {
                     if (logger.isWarnEnabled()) {
@@ -140,9 +151,10 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+        //获取序列化方式
         Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
         ObjectInput in = s.deserialize(channel.getUrl(), is);
-        // get request id.
+        // get request id.获取请求标识
         long id = Bytes.bytes2long(header, 4);
         if ((flag & FLAG_REQUEST) == 0) {
             // decode response.
@@ -173,20 +185,24 @@ public class ExchangeCodec extends TelnetCodec {
             }
             return res;
         } else {
-            // decode request.
+            // decode request.设置请求标志，创建Request对象
             Request req = new Request(id);
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
+                //心跳事件
                 req.setEvent(Request.HEARTBEAT_EVENT);
             }
             try {
                 Object data;
                 if (req.isHeartbeat()) {
+                    //心跳包
                     data = decodeHeartbeatData(channel, in);
                 } else if (req.isEvent()) {
+                    //事件
                     data = decodeEventData(channel, in);
                 } else {
+                    //请求数据
                     data = decodeRequestData(channel, in);
                 }
                 req.setData(data);
