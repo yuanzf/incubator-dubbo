@@ -1,5 +1,6 @@
 /**
  *消费端服务请求过来   对请求的数据解码
+ * 至此在Dubbo线程池中做解码
  */
 
 package org.apache.dubbo.remoting.transport;

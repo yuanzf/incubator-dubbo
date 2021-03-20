@@ -39,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * ExchangeReceiver
+ * 封装处理Request/Respon和telnet调用能力
  */
 public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
