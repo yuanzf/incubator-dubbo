@@ -74,6 +74,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
+            //判断是否强制Mock
             if (logger.isWarnEnabled()) {
                 logger.warn("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + directory.getUrl());
             }
@@ -147,6 +148,8 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             ((RpcInvocation) invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
             try {
+                //selectMockInvoker在对象的attachment属性中放入了一个invocation.need.mock=true的标识，directory在list方法中列出所有Invoker的时候，如果检测到这个标识
+                //则使用MockInvokersSelectors来过滤Invoker而不是使用普通的route实现，最后返回Mock类型的Invoker列表。
                 invokers = directory.list(invocation);
             } catch (RpcException e) {
                 if (logger.isInfoEnabled()) {

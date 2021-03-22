@@ -48,14 +48,26 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
 
+    /**
+     * 此处考虑了服务刚刚启动时候需要有一个预热过程，如果已启动就给予100%的流量可能会让服务崩溃，
+     * 因此使用了calculateWarmupWeight来计算预热时候的权重。
+     * @param invoker
+     * @param invocation
+     * @return
+     */
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
+        //通过URL获取当前Invoker设置的权重
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
         if (weight > 0) {
+            //获取启动的时间点
             long timestamp = invoker.getUrl().getParameter(Constants.REMOTE_TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {
+                //求差值，得到已经预热了多久
                 int uptime = (int) (System.currentTimeMillis() - timestamp);
+                //获取设置的总的预热时间
                 int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
                 if (uptime > 0 && uptime < warmup) {
+                    //计算出最后的权重
                     weight = calculateWarmupWeight(uptime, warmup, weight);
                 }
             }

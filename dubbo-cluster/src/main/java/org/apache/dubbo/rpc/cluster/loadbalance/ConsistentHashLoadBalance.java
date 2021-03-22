@@ -33,6 +33,10 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ConsistentHashLoadBalance
+ * 一致性Hash，相同参数的请求总是发到同一提供者。当某一台提供者挂时，原本发往该提供者de
+ * 请求基于虚拟节点会平摊到其他提供者，不会引起剧烈变动。默认支队第一个参数hash,如果要修改
+ * 则配置<dubbo:parameter key="hash.arguments" value="0,1" />。默认使用160份虚拟节点
+ * 如果要修改，则配合<dubbo:parameter key="hash.nodes" value="320" />
  *
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
@@ -43,15 +47,19 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @SuppressWarnings("unchecked")
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        //获取方法名，
         String methodName = RpcUtils.getMethodName(invocation);
         //根据服务名+方法名生成唯key
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
+        //把所有可以调用Invoker列表进行hash
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != identityHashCode) {
+            //现在Invoker列表的Hash列表的hash码和之前的不一样，说明Invoker列表已经发生了变化，则重新创建Selector
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
+        //通过Selector选出一个Invoker
         return selector.select(invocation);
     }
 
@@ -72,7 +80,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
-            // 获取所配置的结点数，如没有设置则使用默认值160
+            // 获取所配置的虚拟结点数，如没有设置则使用默认值160
             this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
             String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
             argumentIndex = new int[index.length];

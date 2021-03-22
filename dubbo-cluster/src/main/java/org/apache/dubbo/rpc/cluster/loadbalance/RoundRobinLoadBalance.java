@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Round robin load balance.
+ * 轮训，按公约后的权重设置轮训比例，存在慢的提供者积累请求的问题，
+ * 比如第二台机器很慢，但没有挂，当请求调用到第二台时就卡在哪里，久而久之，
+ * 所有请求都卡在第二台上
  *
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
@@ -40,9 +43,12 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        int length = invokers.size(); // Number of invokers
-        int maxWeight = 0; // The maximum weight
-        int minWeight = Integer.MAX_VALUE; // The minimum weight
+        // Number of invokers
+        int length = invokers.size();
+        // The maximum weight
+        int maxWeight = 0;
+        // The minimum weight
+        int minWeight = Integer.MAX_VALUE;
         final LinkedHashMap<Invoker<T>, IntegerWrapper> invokerToWeightMap = new LinkedHashMap<Invoker<T>, IntegerWrapper>();
         int weightSum = 0;
         for (int i = 0; i < length; i++) {

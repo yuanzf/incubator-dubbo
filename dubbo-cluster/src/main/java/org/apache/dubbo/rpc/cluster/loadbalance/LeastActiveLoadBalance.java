@@ -26,7 +26,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * LeastActiveLoadBalance
- * 最少活跃调用数字
+ * 最少活跃调用数，如果随机数相同则随机调用，活跃数指调用前后技术差。使
+ * 慢的提供者收到更少的请求，因为越慢的提供者的调用前后计数差越大
+ * 最少活跃计数
+ * 在ActiveLimiterFilter中只要有一个请求过来，该方法的调用的计数就会原子性+1.整个Invoker调用过程包含在
+ * try-catch-finaly中，无论调用结束或出现异常，finaly中都会把技术原子-1，该原子计数就是最少活跃数
  */
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
@@ -58,6 +62,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             //获取权重
             int afterWarmup = getWeight(invoker, invocation);
             // Restart, when find a invoker having smaller least active value.
+            //第一次或者发现更小的活跃数，不过是第一次还是发现更小的活跃数，之前的计数都要重新开始这里置空之前的计数
             if (leastActive == -1 || active < leastActive) {
                 //记录当前最小活跃数
                 leastActive = active;
@@ -72,7 +77,8 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 // 是否有相同的权重
                 sameWeight = true;
             } else if (active == leastActive) {
-                //当前Invoker的活跃数和最小活跃数相等
+                //当前Invoker的活跃数和最小活跃数相等，说明有N个Invoker都是最小计数，全部保存到集合中后续就
+                //在他们里面根据权重选一个节点
                 //记录Invoker的索引未知，   leastCount 最小活跃数的的个数
                 leastIndexes[leastCount++] = i;
                 //计算总权重
@@ -86,6 +92,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         }
         //最少活跃调用数唯一，直接调用Invoker
         if (leastCount == 1) {
+            //如果只有一个Invoker则直接返回，
             return invokers.get(leastIndexes[0]);
         }
         //最少活跃数多于一个并且权重不相等，则采用随机访问（RandomLoadBalance算法访问）
