@@ -26,7 +26,14 @@
     <dubbo:application name="demo-consumer"/>
 
     <!-- use multicast registry center to discover service -->
-    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+    <dubbo:registry protocol="zookeeper" address="127.0.0.1:2181"/>
+
+    <!-- 从其他项目复制过来，作为参考，一个项目中基本既有服务消费，也有服务提供，因此 provider、consumer都有配置 -->
+<!--    <dubbo:provider export="${dubbo.export}" token="${dubbo.token}"/>-->
+<!--    <dubbo:protocol name="dubbo" port="${dubbo.port}" host="${dubbo.host}"/>-->
+<!--    <dubbo:monitor protocol="registry"/>-->
+<!--    <dubbo:consumer timeout="${dubbo.timeout}"/>-->
+    <!-- 从其他项目复制过来 -->
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->

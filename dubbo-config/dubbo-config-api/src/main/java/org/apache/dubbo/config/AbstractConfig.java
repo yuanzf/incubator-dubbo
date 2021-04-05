@@ -120,7 +120,7 @@ public abstract class AbstractConfig implements Serializable {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
-                    //针对同一类型Config  java -D配置信息
+                    //针对同一类型Config从
                     if (value == null || value.length() == 0) {
                         //dubbo.consumer.threadpool
                         String pn = prefix + property;

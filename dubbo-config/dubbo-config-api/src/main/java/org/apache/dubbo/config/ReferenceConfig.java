@@ -229,7 +229,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            //检查interfaceClass是否是接口和interfaceClass是否包含methods方法
+            //检查interfaceClass是否是接口和interfaceClass是否包含methods方法，dubbo:reference 子标签配置的method
             checkInterfaceAndMethods(interfaceClass, methods);
         }
         //判断是否在系统级别配置了interfaceName的先关信息。
@@ -255,7 +255,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
                 } finally {
                     try {
-                        if (null != fis) fis.close();
+                        if (null != fis) {
+                            fis.close();
+                        }
                     } catch (IOException e) {
                         logger.warn(e.getMessage(), e);
                     }
@@ -478,6 +480,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void checkDefault() {
         if (consumer == null) {
+            //项目没配置<dubbo:consumer />
             consumer = new ConsumerConfig();
         }
         //读取消费者配置信息

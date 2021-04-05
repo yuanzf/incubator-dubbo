@@ -25,14 +25,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * AdaptiveExtensionFactory
+ * AdaptiveExtensionFactory该类持有所有的具体工厂的实现
+ * 它的getExtension只是遍历了它持有的所有工厂，最终还是调用SPI或Spring工厂的实现getExtension方法
+ *
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {
 
+    /**
+     * 缓存所有工厂的实现包括SpiExtensionFactory、SpringExtensionFactory
+     */
     private final List<ExtensionFactory> factories;
 
     public AdaptiveExtensionFactory() {
+        //说去所有工厂的扩展点加载器
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
         List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
         for (String name : loader.getSupportedExtensions()) {

@@ -130,20 +130,26 @@ public class ZookeeperRegistry extends FailbackRegistry {
     protected void doSubscribe(final URL url, final NotifyListener listener) {
         try {
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                //订阅全量数据，此段逻辑主要是针对Dubbo服务治理平台（dubbo-admin）,平台在启动时会订阅全量接口感知每个服务
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
+                    //listeners为空说明缓存中没有，这里把listeners放入缓存
                     zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
                     listeners = zkListeners.get(url);
                 }
                 ChildListener zkListener = listeners.get(listener);
                 if (zkListener == null) {
+                    //说明是第一次，新建一个Listensr
                     listeners.putIfAbsent(listener, new ChildListener() {
+                        //内部方法，不会立即执行，只会在出发变更通知时执行
                         @Override
                         public void childChanged(String parentPath, List<String> currentChilds) {
+                            //如果子节点有变化则会接收到通知，遍历所有子节点
                             for (String child : currentChilds) {
                                 child = URL.decode(child);
                                 if (!anyServices.contains(child)) {
+                                    //如果存在子节点未被订阅，则说明是新节点，则订阅
                                     anyServices.add(child);
                                     subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
                                             Constants.CHECK_KEY, String.valueOf(false)), listener);
@@ -153,21 +159,27 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     });
                     zkListener = listeners.get(listener);
                 }
+                //创建持久节点，接下来订阅持久节点的直接子节点（//create方法内部会检测path节点是否存在）
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (services != null && !services.isEmpty()) {
+                    //遍历所有子节点进行订阅
                     for (String service : services) {
                         service = URL.decode(service);
                         anyServices.add(service);
+                        //增加当前节点的订阅，并且会返回该节点下所有子节点列表
                         subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
                                 Constants.CHECK_KEY, String.valueOf(false)), listener);
                     }
                 }
             } else {
                 List<URL> urls = new ArrayList<URL>();
+                //toCategoriesPath返回 interfaceName/provider,interfaceName/consumer,interfaceName/router,interfaceName/configuration
+                //或者返回 interfaceName/provider
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {
+                        //创建listener缓存
                         zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
                         listeners = zkListeners.get(url);
                     }
@@ -181,12 +193,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         });
                         zkListener = listeners.get(listener);
                     }
+                    //create方法内部会检测path节点是否存在
                     zkClient.create(path, false);
+                    //订阅返回改子节点下的子路径并缓存
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
                         urls.addAll(toUrlsWithEmpty(url, path, children));
                     }
                 }
+                //回调NotifyListener,更新本地缓存信息
                 notify(url, listener, urls);
             }
         } catch (Throwable e) {
