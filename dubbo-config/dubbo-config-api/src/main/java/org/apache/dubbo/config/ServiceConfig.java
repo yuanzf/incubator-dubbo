@@ -79,18 +79,34 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
     private final List<URL> urls = new ArrayList<URL>();
+    /**
+     * 是否暴露为多个服务
+     */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
-    // interface type
+
+    /**
+     * interface type，接口名称字符串
+      */
     private String interfaceName;
+    /**
+     * 暴露服务的接口
+     */
     private Class<?> interfaceClass;
-    // reference to interface impl
+    /**
+     * reference to interface impl，暴露的服务类(***ServiceImpl)
+      */
     private T ref;
-    // service name
+    /**
+     * service name
+     */
     private String path;
-    // method configuration
+    /**
+     * method configuration,服务method配置
+      */
     private List<MethodConfig> methods;
     private ProviderConfig provider;
-    private transient volatile boolean exported; //标志位  是否已经执行export
+    //标志位  是否已经执行export
+    private transient volatile boolean exported;
 
     private transient volatile boolean unexported;
 
@@ -209,6 +225,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
+            //通过延时线程池延迟暴露服务
             delayExportExecutor.schedule(new Runnable() {
                 @Override
                 public void run() {
@@ -362,7 +379,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    //导出dubbo服务的Urls
+    /**
+     * 导出dubbo服务的Urls
+     * 每个服务会在每个注册中心暴露，有几种协议就暴露几次，
+     * 如果有两个注册中心，通过2种协议暴露服务，则会暴露四次
+     */
     private void doExportUrls() {
         //加载URL列表，可以存在多个注册中心，（不同服务注册不同服务中心，一个服务注册到多个注册中心）
         List<URL> registryURLs = loadRegistries(true);
@@ -395,17 +416,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         //各种参数处理
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
-        map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
-        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);//服务端
+        map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());//dubbo版本
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));//设置服务暴露时间戳
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-        //读取其他配置信息到map
+        //读取application信息到map
         appendParameters(map, application);
+        //读取module信息到map
         appendParameters(map, module);
         //读取全局配置信息，会自动添加前缀
         appendParameters(map, provider, Constants.DEFAULT_KEY);
+        //读取protocolConfig信息到map
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
 

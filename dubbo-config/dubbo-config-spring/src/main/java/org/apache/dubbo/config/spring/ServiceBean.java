@@ -105,6 +105,13 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return service;
     }
 
+    /**
+     * ContextRefreshedEvent事件，
+     * 所有的Bean被成功装载，后处理Bean被检测并激活，所有Singleton Bean 被预实例化，ApplicationContext容器已就绪可用
+     *
+     * 当所有的bean初始化完毕后暴露服务
+     * @param event
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
             if (isDelay() && !isExported() && !isUnexported()) {
@@ -115,6 +122,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
     }
 
+    /**
+     * @return true: 容器初始化之后暴露服务
+     *         false：当前备案初始化完成之后立马暴露服务
+     */
     private boolean isDelay() {
         Integer delay = getDelay();
         ProviderConfig provider = getProvider();
@@ -124,6 +135,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return supportedApplicationListener && (delay == null || delay == -1);
     }
 
+    /**
+     * 设置 服务的Provider，application、protocol等信息
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings({"unchecked", "deprecation"})
     public void afterPropertiesSet() throws Exception {
@@ -131,6 +146,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+                //如果未配置protocol，则将provider转化为protocol
                 if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
                         && providerConfigMap.size() > 1) { // backward compatibility
                     List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
@@ -140,6 +156,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                         }
                     }
                     if (!providerConfigs.isEmpty()) {
+                        //设置protocol 将provider转化我protocol
                         setProviders(providerConfigs);
                     }
                 } else {
@@ -251,6 +268,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(beanName);
             }
         }
+        //bean初始化完成进行服务暴露
         if (!isDelay()) {
             export();
         }

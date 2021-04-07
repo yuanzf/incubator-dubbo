@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
 
 /**
  * AbstractBeanDefinitionParser
+ * 解析duboo配置文件中定义的标签
  *
  * @export
  */

@@ -108,6 +108,8 @@ public class ExtensionLoader<T> {
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
     /**
      * 扩展名与扩展对象缓存
+     * 实现了SPI的扩展类并且有@Adaptive注解的类
+     * 如ExtensionFactory类，此类中缓存的是AdaptiveExtensionFactory
      */
     private volatile Class<?> cachedAdaptiveClass = null;
     /**
