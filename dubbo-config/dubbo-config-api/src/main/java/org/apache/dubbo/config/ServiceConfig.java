@@ -583,10 +583,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         }
 
                         //服务端生成Invoker，通过动态代理转换成Invoker,registryUrl存储的是，注册中心的地址，通过export作为key追加元数据信息
-                        //通过动态代理的方式创建创建Invoker
+                        //通过动态代理的方式创建创建Invoker，此时的协议是registry，实际导出的服务的url以export的参数保存在，此Invoice的url中，所以第一次调用的protocol
+                        //是RegistryProtocol
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                        //服务暴露后向注册中心注册服务信息
+                        //服务暴露后向注册中心注册服务信息,
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }

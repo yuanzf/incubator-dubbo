@@ -23,7 +23,7 @@ public class ProviderAPI {
 
         //连接注册中心配置
         RegistryConfig registryConfig = new RegistryConfig();
-        registryConfig.setAddress("multicast://224.5.6.7:1234");
+        registryConfig.setAddress("zookeeper://127.0.0.1:2181");
 
 
         //服务提供者协议配置
