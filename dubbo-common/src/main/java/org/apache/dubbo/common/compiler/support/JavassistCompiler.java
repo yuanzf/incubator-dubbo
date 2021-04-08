@@ -25,6 +25,8 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +121,12 @@ public class JavassistCompiler extends AbstractCompiler {
                 }
             }
         }
+        String fileName =
+        "/Users/yzf/IdeaProjects/amateur/incubator-dubbo/dubbo-common/src/main/resources/javassist/" + className +".class";
+        byte[] byteArr = cls.toBytecode();
+        FileOutputStream fos = new FileOutputStream(new File(fileName));
+        fos.write(byteArr);
+        fos.close();
         return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), JavassistCompiler.class.getProtectionDomain());
     }
 

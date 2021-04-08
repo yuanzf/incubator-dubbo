@@ -78,9 +78,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
+    /**
+     * 保存服务暴露的url，每个协议暴露一个url，一个协议多个注册中心只url
+     */
     private final List<URL> urls = new ArrayList<URL>();
     /**
-     * 是否暴露为多个服务
+     * 是否暴露为多个服务,每个url暴露一个服务，每个协议暴露一个服务
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
@@ -492,7 +495,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } // end of methods for
         }
 
-        //是否是通用的（如果是通用的则返回一个json数据）
+        //是否是泛化调用（如果是通用的则返回一个json数据）
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(Constants.GENERIC_KEY, generic);
             map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
@@ -534,6 +537,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
 
+        //构建服务调用地址
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -556,6 +560,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
+                //registryURLs注册中心地址
                 if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
                         //将dynamic参数添加到URL当中
@@ -578,6 +583,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         }
 
                         //服务端生成Invoker，通过动态代理转换成Invoker,registryUrl存储的是，注册中心的地址，通过export作为key追加元数据信息
+                        //通过动态代理的方式创建创建Invoker
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
                         //服务暴露后向注册中心注册服务信息
@@ -585,6 +591,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         exporters.add(exporter);
                     }
                 } else {
+                    //没有注册中心场景
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
                     //处理没有注册中心的场景，直接暴露服务

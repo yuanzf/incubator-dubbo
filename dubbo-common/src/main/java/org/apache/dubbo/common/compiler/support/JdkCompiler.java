@@ -29,12 +29,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -103,6 +98,14 @@ public class JdkCompiler extends AbstractCompiler {
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
         javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
                 className + ClassUtils.JAVA_EXTENSION, javaFileObject);
+
+        String fileName =
+                "/Users/yzf/IdeaProjects/amateur/incubator-dubbo/dubbo-common/src/main/resources/jdk/" + className + ".class";
+        byte[] byteCode = javaFileObject.getByteCode();
+        FileOutputStream fos = new FileOutputStream(new File(fileName));
+        fos.write(byteCode);
+        fos.close();
+
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
                 null, Arrays.asList(javaFileObject)).call();
         if (result == null || !result) {

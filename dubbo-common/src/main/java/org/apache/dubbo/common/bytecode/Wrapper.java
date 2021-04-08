@@ -96,11 +96,13 @@ public abstract class Wrapper {
      * @return Wrapper instance(not null).
      */
     public static Wrapper getWrapper(Class<?> c) {
-        while (ClassGenerator.isDynamicClass(c)) // can not wrapper on dynamic class.
+        while (ClassGenerator.isDynamicClass(c)) {// can not wrapper on dynamic class.
             c = c.getSuperclass();
+        }
 
-        if (c == Object.class)
+        if (c == Object.class){
             return OBJECT_WRAPPER;
+        }
 
         Wrapper ret = WRAPPER_MAP.get(c);
         if (ret == null) {
@@ -134,9 +136,9 @@ public abstract class Wrapper {
         for (Field f : c.getFields()) {
             String fn = f.getName();
             Class<?> ft = f.getType();
-            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers()))
+            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers())) {
                 continue;
-
+            }
             c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append("=").append(arg(ft, "$3")).append("; return; }");
             c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
             pts.put(fn, ft);
@@ -175,16 +177,17 @@ public abstract class Wrapper {
 
             c3.append(" ) { ");
 
-            if (m.getReturnType() == Void.TYPE)
+            if (m.getReturnType() == Void.TYPE) {
                 c3.append(" w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");").append(" return null;");
-            else
+            } else {
                 c3.append(" return ($w)w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");");
-
+            }
             c3.append(" }");
 
             mns.add(mn);
-            if (m.getDeclaringClass() == c)
+            if (m.getDeclaringClass() == c) {
                 dmns.add(mn);
+            }
             ms.put(ReflectUtils.getDesc(m), m);
         }
         if (hasMethod) {
@@ -229,9 +232,9 @@ public abstract class Wrapper {
         cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.
         cc.addField("public static String[] mns;"); // all method name array.
         cc.addField("public static String[] dmns;"); // declared method name array.
-        for (int i = 0, len = ms.size(); i < len; i++)
+        for (int i = 0, len = ms.size(); i < len; i++) {
             cc.addField("public static Class[] mts" + i + ";");
-
+        }
         cc.addMethod("public String[] getPropertyNames(){ return pns; }");
         cc.addMethod("public boolean hasProperty(String n){ return pts.containsKey($1); }");
         cc.addMethod("public Class getPropertyType(String n){ return (Class)pts.get($1); }");
@@ -249,8 +252,9 @@ public abstract class Wrapper {
             wc.getField("mns").set(null, mns.toArray(new String[0]));
             wc.getField("dmns").set(null, dmns.toArray(new String[0]));
             int ix = 0;
-            for (Method m : ms.values())
+            for (Method m : ms.values()) {
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
+            }
             return (Wrapper) wc.newInstance();
         } catch (RuntimeException e) {
             throw e;
