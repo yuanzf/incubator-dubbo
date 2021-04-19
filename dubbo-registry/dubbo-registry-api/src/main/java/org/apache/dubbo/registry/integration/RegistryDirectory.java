@@ -72,7 +72,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final String[] serviceMethods;
     private final boolean multiGroup;
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
-    private Registry registry; // Initialization at the time of injection, the assertion is not null
+    /**
+     * Initialization at the time of injection, the assertion is not null
+     * 注册中心的信息 <dubbo:registry />
+     */
+    private Registry registry; //
     private volatile boolean forbidden = false;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value

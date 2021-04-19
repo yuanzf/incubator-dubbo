@@ -31,6 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProviderConsumerRegTable {
     public static ConcurrentHashMap<String, Set<ProviderInvokerWrapper>> providerInvokers = new ConcurrentHashMap<String, Set<ProviderInvokerWrapper>>();
+    /**
+     * 服务的key
+     * group/version/interfaceName  和ConsumerInvoiceWraaper的映射。
+     * ConsumerInvoiceWraaper包含一个服务的必要信息
+     */
     public static ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>> consumerInvokers = new ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>>();
 
     public static void registerProvider(Invoker invoker, URL registryUrl, URL providerUrl) {

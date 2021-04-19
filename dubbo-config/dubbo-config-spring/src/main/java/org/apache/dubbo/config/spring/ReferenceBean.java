@@ -74,11 +74,15 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     public boolean isSingleton() {
         return true;
     }
-
+    /**
+     * 服务启动后ReferenceBean初始化完毕执行该方法
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {
+            //消费端未配置<dubbo:consumer />,设置默认配置
             Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, false, false);
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
                 ConsumerConfig consumerConfig = null;
@@ -131,6 +135,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+        //获取注册中心，
         if ((getRegistries() == null || getRegistries().isEmpty())
                 && (getConsumer() == null || getConsumer().getRegistries() == null || getConsumer().getRegistries().isEmpty())
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
@@ -166,6 +171,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+        //是否已经初始化，如果未初始化则初始化
         Boolean b = isInit();
         if (b == null && getConsumer() != null) {
             b = getConsumer().isInit();

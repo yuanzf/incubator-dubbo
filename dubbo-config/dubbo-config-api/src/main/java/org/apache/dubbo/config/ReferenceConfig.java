@@ -220,6 +220,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
+        //是否是泛化调用
         if (ProtocolUtils.isGeneric(getGeneric())) {
             interfaceClass = GenericService.class;
         } else {
@@ -397,6 +398,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
 
         if (isJvmRefer) {
+            //使用jvm协议，直接从内存中获取实例
             URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
@@ -492,9 +494,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
         AsyncFor annotation = interfaceClass.getAnnotation(AsyncFor.class);
-        if (annotation == null) return;
+        if (annotation == null) {
+            return;
+        }
         Class<?> target = annotation.value();
-        if (!target.isAssignableFrom(interfaceClass)) return;
+        if (!target.isAssignableFrom(interfaceClass)) {
+            return;
+        }
         this.asyncInterfaceClass = interfaceClass;
         this.interfaceClass = target;
         setInterface(this.interfaceClass.getName());
